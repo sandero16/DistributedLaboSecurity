@@ -1,14 +1,9 @@
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-
-import static sun.security.x509.CertificateAlgorithmId.ALGORITHM;
+import java.util.Base64;
 
 public class Main {
     private static String bytesToHex(byte[] hash) {
@@ -19,6 +14,44 @@ public class Main {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+    public static String encrypt(String key, String initVector, String value) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
+            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+
+            byte[] encrypted = cipher.doFinal(value.getBytes());
+
+            System.out.println("encrypted string: "
+                    + Base64.getEncoder().encodeToString(encrypted));
+
+            return Base64.getEncoder().encodeToString(encrypted);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static String decrypt(String key, String initVector, String encrypted) {
+        try {
+            IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
+            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+
+            byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+
+            return new String(original);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
     }
 
     public static void main(String[] args) {
@@ -44,26 +77,12 @@ public class Main {
 
 
         //AES
-        String tekst="Encrypting text with distributed systems";
-        byte[] byteTekst=tekst.getBytes();
-            try {
-                SecretKeySpec secretKey = new SecretKeySpec(key, ALGORITHM);
-                Cipher cipher = Cipher.getInstance(ALGORITHM);
-                cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-                cipher.doFinal(byteTekst);
-            }catch (InvalidKeyException ie){
-                ie.printStackTrace();
-                System.out.println(ie);
-            }catch (NoSuchAlgorithmException ne){
+        String key = "Bar12345Bar12345"; // 128 bit key
+        String initVector = "RandomInitVector"; // 16 bytes IV
 
-            }catch (NoSuchPaddingException ne){
+        System.out.println(decrypt(key, initVector,
+                encrypt(key, initVector, "Hello World")));
 
-            }catch (IllegalBlockSizeException ib){
-
-            }catch (BadPaddingException be){
-
-            }
-
-
+        //
     }
 }
