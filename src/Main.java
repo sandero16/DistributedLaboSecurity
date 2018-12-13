@@ -1,6 +1,14 @@
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
+
+import static sun.security.x509.CertificateAlgorithmId.ALGORITHM;
 
 public class Main {
     private static String bytesToHex(byte[] hash) {
@@ -33,6 +41,29 @@ public class Main {
 
         System.out.println(bytesToHex(hashPerson1));
         System.out.println(bytesToHex(hashFakePerson1));
+
+
+        //AES
+        String tekst="Encrypting text with distributed systems";
+        byte[] byteTekst=tekst.getBytes();
+            try {
+                SecretKeySpec secretKey = new SecretKeySpec(key, ALGORITHM);
+                Cipher cipher = Cipher.getInstance(ALGORITHM);
+                cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                cipher.doFinal(byteTekst);
+            }catch (InvalidKeyException ie){
+                ie.printStackTrace();
+                System.out.println(ie);
+            }catch (NoSuchAlgorithmException ne){
+
+            }catch (NoSuchPaddingException ne){
+
+            }catch (IllegalBlockSizeException ib){
+
+            }catch (BadPaddingException be){
+
+            }
+
 
     }
 }
